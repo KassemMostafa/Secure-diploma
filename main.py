@@ -59,27 +59,6 @@ def recuperer(image,taille):
 		message += chr(int(rep_binaire, 2))
 	return message
 
-def decodeMessage(message_retrouve):
-    separator = ' ||'
-    part1 = message_retrouve.split(separator, 1)[0] 
-
-    listOfWords = message_retrouve.split(' || ', 1)
-    if len(listOfWords) > 0: 
-        message_retrouve = listOfWords[1]
-
-    separator = ' ||'
-    part2 = message_retrouve.split(separator, 1)[0] 
-
-    listOfWords = message_retrouve.split('|| ', 1)
-    if len(listOfWords) > 0: 
-        part3 = listOfWords[1]
-	#base64_bytes = part3.encode('ascii')
-	#message_bytes = base64.b64decode(base64_bytes)
-	#message = message_bytes.decode('ascii')
-    print(part3)
-    
-    return [part1 , part2, message]
-
 
 def decodeMessage(message_retrouve):
     separator = ' ||'
@@ -95,23 +74,18 @@ def decodeMessage(message_retrouve):
     listOfWords = message_retrouve.split('|| ', 1)
     if len(listOfWords) > 0: 
         part3 = listOfWords[1]
-	#base64_bytes = part3.encode('ascii')
-	#message_bytes = base64.b64decode(base64_bytes)
-	#message = message_bytes.decode('ascii')
-    print(part3)
-    
     return [part1 , part2, part3]
     
 
 
 def getQRcode():
-	img = cv2.imread("certif.png")
+	img = cv2.imread("certif.png") #ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
 	crop_img = img[940:1105, 1430:1600]
 	cv2.imwrite("qrcode2.png", crop_img)
 	img=cv2.imread("qrcode2.png")
 	det=cv2.QRCodeDetector()
 	val, pts, st_code=det.detectAndDecode(img)
-	print(val)
+	return val
 
 def extrairePreuve(): #à afficher lors de la verification du qrcode
 	return 0
@@ -164,19 +138,21 @@ def steganoAdd(img):
 # programme de demonstration
 
 
+def verifAttestation():
+	message_retrouve = recuperer(Image.open("certif.png"), 64)
+	listrep = decodeMessage(message_retrouve)
+	print("donné de l'image: " + listrep[0] + " || " + listrep[1] + " || " + listrep[2] )
+	val = getQRcode()
+	print("Donné du Qrcode: " + val)
+	print("vérification fini")
+	return 1
 
 
 creerAttestation()
 print("attestation cree")
 ## Extraire le code d'une image:
 
-
-message_retrouve = recuperer(Image.open("certif.png"), 64)
-print(message_retrouve)
-listrep = decodeMessage(message_retrouve)
-print(listrep)
-
-getQRcode()
+print(verifAttestation())
 
 
 #https://gist.github.com/void-elf/0ed0e136d6d342974257c93f571e28b5
