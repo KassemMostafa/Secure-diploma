@@ -92,7 +92,7 @@ def decodeMessage(message_retrouve):
 def getQRcode():
     # ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
     img = cv2.imread("diplome.png")
-    crop_img = img[940:1105, 1430:1600]
+    crop_img = img[930:1125, 1430:1620]
     cv2.imwrite("qrcode2.png", crop_img)
     img = cv2.imread("qrcode2.png")
     det = cv2.QRCodeDetector()
@@ -182,6 +182,7 @@ def verifAttestation():
     message_retrouve = recuperer(Image.open("diplome.png"), 7392)
     listStega = decodeMessage(message_retrouve)
     listStega[1] = listStega[1].replace('0', '')
+    listStega[1] = listStega[1].replace(' ', '')
     print("donné de l'image: " +
           listStega[0] + " || " + listStega[1] + " || " + "listStega[2] ")
     val = getQRcode()
@@ -198,13 +199,28 @@ def verifAttestation():
     with open('rep.txt') as f:
         first_line = f.readline()
         first_line = first_line.strip()
-    if 'OK' in first_line:
+        
+    if listStega[0] == listQrcode[0]:
         TEST1 = True
-        print("okok")
+        print("okok1")
     else:
         TEST1 = False
-
-    return 1
+        
+    if listStega[1] == listQrcode[1]:
+        TEST2 = True
+        print("okok2")
+    else:
+        TEST2 = False        
+            
+    if 'OK' in first_line:
+        TEST3 = True
+        print("okok3")
+    else:
+        TEST3 = False   
+    if (TEST1 == True & TEST2 == True & TEST3 == True ): 
+        return 1
+    else:
+        return 2
 
 
 creerAttestation()
