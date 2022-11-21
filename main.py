@@ -204,7 +204,7 @@ def createSteganoContent(imgName, prenom, nom, diplome): #creates stegano conten
 
 
 def CreateDiploma(query): #Object { prenom: "", nom: "", diplome: "" }
-	query2 = query.lstrip[10:-1] 
+	query2 = query[9:-1]
 	j = json.loads(query2)
 	prenom = j["prenom"]
 	nom = j["nom"]
@@ -215,6 +215,7 @@ def CreateDiploma(query): #Object { prenom: "", nom: "", diplome: "" }
 	creerQRCode(signature)
 	return 0
 
-query = '{ "prenom":"Mostafa", "nom":"Kassem", "diplome":"ING"}'
+query = '{"query":{"prenom":"eazeae","nom":"azeaze","diplome":"ezaeaz"}}'
+
 CreateDiploma(query)
 #https://gist.github.com/void-elf/0ed0e136d6d342974257c93f571e28b5
