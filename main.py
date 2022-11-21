@@ -220,6 +220,6 @@ def CreateDiploma(query): #Object { prenom: "", nom: "", diplome: "" }
 	creerQRCode(signature)
 	return 0
 
-
-
+query = '{ "prenom":"Mostafa", "nom":"Kassem", "diplome":"ING"}'
+CreateDiploma(query)
 #https://gist.github.com/void-elf/0ed0e136d6d342974257c93f571e28b5
