@@ -8,7 +8,6 @@ import segno
 import time
 import cv2
 import os
-from pyasn1.codec.der import encoder
 import base64
 import rsa
 import OpenSSL
@@ -16,93 +15,84 @@ from OpenSSL import crypto
 import qrcode
 import json
 
-#pip install segno
-#pip install qrcode
-#pip install cv2
-#pip install opencv-python
+# pip install segno
+# pip install qrcode
+# pip install cv2
+# pip install opencv-python
+
 
 #######################################################Stéganographie##################################################################
 
 def vers_8bit(c):
-	chaine_binaire = bin(ord(c))[2:]
-	return "0"*(8-len(chaine_binaire))+chaine_binaire
+    chaine_binaire = bin(ord(c))[2:]
+    return "0"*(8-len(chaine_binaire))+chaine_binaire
+
 
 def modifier_pixel(pixel, bit):
-	# on modifie que la composante rouge
-	r_val = pixel[0]
-	rep_binaire = bin(r_val)[2:]
-	rep_bin_mod = rep_binaire[:-1] + bit
-	r_val = int(rep_bin_mod, 2)
-	return tuple([r_val] + list(pixel[1:]))
+    # on modifie que la composante rouge
+    r_val = pixel[0]
+    rep_binaire = bin(r_val)[2:]
+    rep_bin_mod = rep_binaire[:-1] + bit
+    r_val = int(rep_bin_mod, 2)
+    return tuple([r_val] + list(pixel[1:]))
+
 
 def recuperer_bit_pfaible(pixel):
-	r_val = pixel[0]
-	return bin(r_val)[-1]
+    r_val = pixel[0]
+    return bin(r_val)[-1]
 
-def cacher(image,message):
-	dimX,dimY = image.size
-	im = image.load()
-	message_binaire = ''.join([vers_8bit(c) for c in message])
-	posx_pixel = 0
-	posy_pixel = 0
-	for bit in message_binaire:
-		im[posx_pixel,posy_pixel] = modifier_pixel(im[posx_pixel,posy_pixel],bit)
-		posx_pixel += 1
-		if (posx_pixel == dimX):
-			posx_pixel = 0
-			posy_pixel += 1
-		assert(posy_pixel < dimY)
 
-def recuperer(image,taille):
-	message = ""
-	dimX,dimY = image.size
-	im = image.load()
-	posx_pixel = 0
-	posy_pixel = 0
-	for rang_car in range(0,taille):
-		rep_binaire = ""
-		for rang_bit in range(0,8):
-			rep_binaire += recuperer_bit_pfaible(im[posx_pixel,posy_pixel])
-			posx_pixel +=1
-			if (posx_pixel == dimX):
-				posx_pixel = 0
-				posy_pixel += 1
-		message += chr(int(rep_binaire, 2))
-	return message
+def cacher(image, message):
+    dimX, dimY = image.size
+    im = image.load()
+    message_binaire = ''.join([vers_8bit(c) for c in message])
+    posx_pixel = 0
+    posy_pixel = 0
+    for bit in message_binaire:
+        im[posx_pixel, posy_pixel] = modifier_pixel(
+            im[posx_pixel, posy_pixel], bit)
+        posx_pixel += 1
+        if (posx_pixel == dimX):
+            posx_pixel = 0
+            posy_pixel += 1
+        assert (posy_pixel < dimY)
+
+
+def recuperer(image, taille):
+    message = ""
+    dimX, dimY = image.size
+    im = image.load()
+    posx_pixel = 0
+    posy_pixel = 0
+    for rang_car in range(0, taille):
+        rep_binaire = ""
+        for rang_bit in range(0, 8):
+            rep_binaire += recuperer_bit_pfaible(im[posx_pixel, posy_pixel])
+            posx_pixel += 1
+            if (posx_pixel == dimX):
+                posx_pixel = 0
+                posy_pixel += 1
+        message += chr(int(rep_binaire, 2))
+    return message
+
 
 def decodeMessage(message_retrouve):
     separator = ' ||'
-    part1 = message_retrouve.split(separator, 1)[0] 
+    part1 = message_retrouve.split(separator, 1)[0]
 
     listOfWords = message_retrouve.split(' || ', 1)
-    if len(listOfWords) > 0: 
+    if len(listOfWords) > 0:
         message_retrouve = listOfWords[1]
 
     separator = ' ||'
-    part2 = message_retrouve.split(separator, 1)[0] 
+    part2 = message_retrouve.split(separator, 1)[0]
 
     listOfWords = message_retrouve.split('|| ', 1)
-    if len(listOfWords) > 0: 
+    if len(listOfWords) > 0:
         part3 = listOfWords[1]
-	
-    return [part1 , part2, part3]
-    
-def steganoAdd(img,prenom,nom,diplome):
 
-	prenom = "Mostafa"
-	nom = "Kassem"
-	diplome = "ingenieur"
-	
-	steg = nom + " " +  prenom + " || " + diplome + " " 
-	n = len(steg)
-	if (n < 60):
-		y = 60 - n
-		while (y > 0):
-			steg += "0"
-			y -= 1
-	signature = signdiplome(result)
-	cacher(img, steg)
-	return img
+
+    return [part1, part2, part3]
 
 
 def addStegano(imgName, stringToHide):
@@ -112,13 +102,18 @@ def addStegano(imgName, stringToHide):
 
 ###########################################################QRCode############################################################################################
 def getQRcode():
-	img = cv2.imread("diplome.png") #ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
-	crop_img = img[940:1105, 1430:1600]
-	cv2.imwrite("qrcode2.png", crop_img)
-	img=cv2.imread("qrcode2.png")
-	det=cv2.QRCodeDetector()
-	val, pts, st_code=det.detectAndDecode(img)
-	return val
+    # ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
+    img = cv2.imread("diplome.png")
+    crop_img = img[940:1105, 1430:1600]
+    cv2.imwrite("qrcode2.png", crop_img)
+    img = cv2.imread("qrcode2.png")
+    det = cv2.QRCodeDetector()
+    val, pts, st_code = det.detectAndDecode(img)
+    return val
+
+
+def extrairePreuve():  # à afficher lors de la verification du qrcode
+    return 0
 
 def addQRCode():
 	qr = Image.open("qrcode.png")
