@@ -1,11 +1,16 @@
 #!/usr/bin/python
 # coding=utf8
 
+
 from PIL import Image, ImageDraw, ImageFont
 import segno
+import time
+import cv2
 import os
-
-
+#pip install segno
+#pip install qrcode
+#pip install cv2
+#pip install opencv-python
 
 def vers_8bit(c):
 	chaine_binaire = bin(ord(c))[2:]
@@ -53,6 +58,60 @@ def recuperer(image,taille):
 				posy_pixel += 1
 		message += chr(int(rep_binaire, 2))
 	return message
+
+def decodeMessage(message_retrouve):
+    separator = ' ||'
+    part1 = message_retrouve.split(separator, 1)[0] 
+
+    listOfWords = message_retrouve.split(' || ', 1)
+    if len(listOfWords) > 0: 
+        message_retrouve = listOfWords[1]
+
+    separator = ' ||'
+    part2 = message_retrouve.split(separator, 1)[0] 
+
+    listOfWords = message_retrouve.split('|| ', 1)
+    if len(listOfWords) > 0: 
+        part3 = listOfWords[1]
+	#base64_bytes = part3.encode('ascii')
+	#message_bytes = base64.b64decode(base64_bytes)
+	#message = message_bytes.decode('ascii')
+    print(part3)
+    
+    return [part1 , part2, message]
+
+
+def decodeMessage(message_retrouve):
+    separator = ' ||'
+    part1 = message_retrouve.split(separator, 1)[0] 
+
+    listOfWords = message_retrouve.split(' || ', 1)
+    if len(listOfWords) > 0: 
+        message_retrouve = listOfWords[1]
+
+    separator = ' ||'
+    part2 = message_retrouve.split(separator, 1)[0] 
+
+    listOfWords = message_retrouve.split('|| ', 1)
+    if len(listOfWords) > 0: 
+        part3 = listOfWords[1]
+	#base64_bytes = part3.encode('ascii')
+	#message_bytes = base64.b64decode(base64_bytes)
+	#message = message_bytes.decode('ascii')
+    print(part3)
+    
+    return [part1 , part2, part3]
+    
+
+
+def getQRcode():
+	img = cv2.imread("certif.png")
+	crop_img = img[940:1105, 1430:1600]
+	cv2.imwrite("qrcode2.png", crop_img)
+	img=cv2.imread("qrcode2.png")
+	det=cv2.QRCodeDetector()
+	val, pts, st_code=det.detectAndDecode(img)
+	print(val)
 
 def extrairePreuve(): #à afficher lors de la verification du qrcode
 	return 0
@@ -104,9 +163,23 @@ def steganoAdd(img):
 
 # programme de demonstration
 
+
+
+
 creerAttestation()
+print("attestation cree")
+## Extraire le code d'une image:
 
 
+message_retrouve = recuperer(Image.open("certif.png"), 64)
+print(message_retrouve)
+listrep = decodeMessage(message_retrouve)
+print(listrep)
+
+getQRcode()
+
+
+#https://gist.github.com/void-elf/0ed0e136d6d342974257c93f571e28b5
 
 
 
