@@ -187,12 +187,15 @@ def verifAttestation():
     print("donné du Qrcode: " +
           listQrcode[0] + " || " + listQrcode[1] + " || " + listQrcode[2])
 
+    with open("doc.tsr", "wb") as file:
+        file.write(base64.b64decode(listStega[2].encode()))
+    os.system("openssl ts -verify -in doc.tsr -queryfile diplome.tsq -CAfile cacert.pem -untrusted tsa.crt")
     # Je récupére le code:
     # tsr =
     # with open("file.tsr", "wb") as f:
     # f.write(encoder.encode(tsr))
     #print("vérification fini")
-    # return 1
+    return 1
 
 
 creerAttestation()
