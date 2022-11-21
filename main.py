@@ -101,7 +101,7 @@ def decodeMessage(message_retrouve):
 
 
 def getQRcode():
-	img = cv2.imread("certif.png") #ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
+	img = cv2.imread("diplome.png") #ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
 	crop_img = img[940:1105, 1430:1600]
 	cv2.imwrite("qrcode2.png", crop_img)
 	img=cv2.imread("qrcode2.png")
@@ -112,9 +112,6 @@ def getQRcode():
 def extrairePreuve(): #à afficher lors de la verification du qrcode
 	return 0
 
-def creerPass(): # utiliser lors de la création d'une attestation
-	return 1
-
 def creerQRCode(prenom, nom, diplome):
 	 #TODO qrcode signature =>encoder en base64
 	signature = 0
@@ -124,15 +121,18 @@ def creerQRCode(prenom, nom, diplome):
 	qr.save('qrcode.png',light=None, scale= 5)
 	return 0
 
-def creerTimestamp(prenom, nom, diplome):
+def creerTimestamp():
 	#TODO create time stamp
 	#DONE
-	os.system('openssl ts -query -data ' + prenom + '_' + nom + '_' + diplome + '.png -no_nonce -sha512 -cert -out ' + prenom + '_' + nom + '_' + diplome + '.tsq')
-	os.system('curl -H "Content-Type: application/timestamp-query" --data-binary "@' + prenom + '_' + nom + '_' + diplome + '.tsq" https://freetsa.org/tsr > ' + prenom + '_' + nom + '_' + diplome + '.tsr')
-	
-	return 0
+	os.system('openssl ts -query -data diplome.png -no_nonce -sha512 -cert -out diplome.tsq')
+	os.system('curl -H "Content-Type: application/timestamp-query" --data-binary "@diplome.tsq" https://freetsa.org/tsr > diplome.tsr')
+	data = open("diplome.tsr", "r").read()
+	timestamp = base64.b64encode(data)
+	return timestamp
 
-def creerAttestation(): #lancé par l'admin à la création d'une attestation
+def creerAttestation(query): #lancé par l'admin à la création d'une attestation
+	query = "Object { prenom: "", nom: "", diplome: "" }"
+
 	#Nomdefichier = prenom_nom_diplome.png
 	prenom = "Mostafa"
 	nom = "Kassem"
@@ -147,9 +147,9 @@ def creerAttestation(): #lancé par l'admin à la création d'une attestation
 	creerQRCode(prenom,nom,diplome)	
 	qr = Image.open("qrcode.png")
 	img.paste(qr, (1430,930))
-	img.save(prenom + '_' + nom + '_' + diplome +".png")
+	img.save("diplome.png")
 	img = steganoAdd(img,prenom,nom,diplome)
-	img.save(prenom + '_' + nom + '_' + diplome +".png")
+	img.save("diplome.png")
 	os.remove("qrcode.png")
 	return 1
 
@@ -160,11 +160,11 @@ def steganoAdd(img,prenom,nom,diplome):
 	prenom = "Mostafa"
 	nom = "Kassem"
 	diplome = "ingenieur"
-	timestamp = "13h09"
+	
 	#TODO append timestamp in base64 to steg and measure size
 	
 	
-	creerTimestamp(prenom,nom,diplome)
+	timestamp = creerTimestamp()
 	steg = nom + " " +  prenom + " || " + diplome + " || " + timestamp
 	cacher(img, steg)
 	return img 
