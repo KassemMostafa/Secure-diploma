@@ -144,24 +144,21 @@ def creerAttestation(): #lancé par l'admin à la création d'une attestation
 	prenom = "Mostafa"
 	nom = "Kassem"
 	diplome = "ingenieur"
-	if (1 != creerPass()):
-		return 0
-	else:
-		#TODO accès signature (en attente de fichier de config)
-		img = Image.open("Blank_Certif.png")
-		draw = ImageDraw.Draw(img)
-		font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 70)
-		draw.text((470, 480),"CERTIFICAT INGENIEUR ",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black") #draws on top line	
-		draw.text((680, 600),"DÉLIVRÉ À",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
-		draw.text((580, 720),"Mostafa Kassem",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
-		creerQRCode(prenom,nom,diplome)	
-		qr = Image.open("qrcode.png")
-		img.paste(qr, (1430,930))
-		img.save(prenom + '_' + nom + '_' + diplome +".png")
-		img = steganoAdd(img,prenom,nom,diplome)
-		img.save(prenom + '_' + nom + '_' + diplome +".png")
-		os.remove("qrcode.png")
-		return 1
+	#TODO accès signature (en attente de fichier de config)
+	img = Image.open("Blank_Certif.png")
+	draw = ImageDraw.Draw(img)
+	font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 70)
+	draw.text((470, 480),"CERTIFICAT INGENIEUR ",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black") #draws on top line	
+	draw.text((680, 600),"DÉLIVRÉ À",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
+	draw.text((580, 720),"Mostafa Kassem",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
+	creerQRCode(prenom,nom,diplome)	
+	qr = Image.open("qrcode.png")
+	img.paste(qr, (1430,930))
+	img.save(prenom + '_' + nom + '_' + diplome +".png")
+	img = steganoAdd(img,prenom,nom,diplome)
+	img.save(prenom + '_' + nom + '_' + diplome +".png")
+	os.remove("qrcode.png")
+	return 1
 
 
 
