@@ -7,6 +7,9 @@ import segno
 import time
 import cv2
 import os
+from pyasn1.codec.der import encoder
+import base64
+
 #pip install segno
 #pip install qrcode
 #pip install cv2
@@ -78,7 +81,7 @@ def decodeMessage(message_retrouve):
 	#message = message_bytes.decode('ascii')
     print(part3)
     
-    return [part1 , part2, message]
+    return [part1 , part2, part3]
 
 
 def decodeMessage(message_retrouve):
@@ -119,45 +122,60 @@ def extrairePreuve(): #à afficher lors de la verification du qrcode
 def creerPass(): # utiliser lors de la création d'une attestation
 	return 1
 
-def creerQRCode():
+def creerQRCode(prenom, nom, diplome):
+	 #TODO qrcode signature =>encoder en base64
+	signature = 0
 	
-	qr = segno.make("Mostafa Kassem | Ingénieur | Timestamp ", encoding="utf-8")
+	qr = segno.make(prenom + ' ' + nom + ' || ' + diplome + ' || ' + signature, encoding="utf-8")
+
 	qr.save('qrcode.png',light=None, scale= 5)
 	return 0
 
-def creerTimestamp():
-	os.system("openssl ts -query -data certif.png -no_nonce -sha512 -cert -out file.tsq")
-	os.system('curl -H "Content-Type: application/timestamp-query" --data-binary "@file.tsq" https://freetsa.org/tsr > file.tsr')
+def creerTimestamp(prenom, nom, diplome):
+	#TODO create time stamp
+	#DONE
+	os.system('openssl ts -query -data ' + prenom + '_' + nom + '_' + diplome + '.png -no_nonce -sha512 -cert -out ' + prenom + '_' + nom + '_' + diplome + '.tsq')
+	os.system('curl -H "Content-Type: application/timestamp-query" --data-binary "@' + prenom + '_' + nom + '_' + diplome + '.tsq" https://freetsa.org/tsr > ' + prenom + '_' + nom + '_' + diplome + '.tsr')
+	
 	return 0
 
 def creerAttestation(): #lancé par l'admin à la création d'une attestation
+	#Nomdefichier = prenom_nom_diplome.png
+	prenom = "Mostafa"
+	nom = "Kassem"
+	diplome = "ingenieur"
 	if (1 != creerPass()):
 		return 0
 	else:
-		#accès signature (en attente de fichier de config)
+		#TODO accès signature (en attente de fichier de config)
 		img = Image.open("Blank_Certif.png")
 		draw = ImageDraw.Draw(img)
 		font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 70)
 		draw.text((470, 480),"CERTIFICAT INGENIEUR ",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black") #draws on top line	
 		draw.text((680, 600),"DÉLIVRÉ À",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
 		draw.text((580, 720),"Mostafa Kassem",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
-		creerQRCode()	
+		creerQRCode(prenom,nom,diplome)	
 		qr = Image.open("qrcode.png")
 		img.paste(qr, (1430,930))
-		img = steganoAdd(img)
-		img.save("certif.png")
+		img.save(prenom + '_' + nom + '_' + diplome +".png")
+		img = steganoAdd(img,prenom,nom,diplome)
+		img.save(prenom + '_' + nom + '_' + diplome +".png")
 		os.remove("qrcode.png")
 		return 1
 
 
 
-def steganoAdd(img):
+def steganoAdd(img,prenom,nom,diplome):
 
 	prenom = "Mostafa"
 	nom = "Kassem"
 	diplome = "ingenieur"
-	timestamp = "10h06"
-	steg = nom + " " +  prenom + " || " + diplome + " || " + timestamp 
+	timestamp = "13h09"
+	#TODO append timestamp in base64 to steg and measure size
+	
+	
+	creerTimestamp(prenom,nom,diplome)
+	steg = nom + " " +  prenom + " || " + diplome + " || " + timestamp
 	cacher(img, steg)
 	return img 
 
