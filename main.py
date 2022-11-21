@@ -189,7 +189,7 @@ def verifAttestation():
 	#return 1
 
 
-creerAttestation()
+creerAttestation("Object { prenom: "", nom: "", diplome: "" }")
 print("attestation cree")
 ## Extraire le code d'une image:
 print(verifAttestation())
