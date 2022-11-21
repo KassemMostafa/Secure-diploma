@@ -89,10 +89,11 @@ def decodeMessage(message_retrouve):
     return [part1, part2, part3]
 
 
+
 def getQRcode():
     # ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
-    img = cv2.imread("diplome.png")
-    crop_img = img[930:1125, 1430:1620]
+    img = cv2.imread("cert.png")
+    crop_img = img[900:1185, 1400:1680]
     cv2.imwrite("qrcode2.png", crop_img)
     img = cv2.imread("qrcode2.png")
     det = cv2.QRCodeDetector()
@@ -184,12 +185,13 @@ def verifAttestation():
     listStega[1] = listStega[1].replace('0', '')
     listStega[1] = listStega[1].replace(' ', '')
     print("donné de l'image: " +
-          listStega[0] + " || " + listStega[1] + " || " + "listStega[2] ")
+          listStega[0] + " || " + listStega[1] + " || " + "listStega[2]" )
     val = getQRcode()
-    listQrcode = decodeMessage(val)
-    print("donné du Qrcode: " +
-          listQrcode[0] + " || " + listQrcode[1] + " || " + listQrcode[2])
-
+    print(val)
+    #val = base64.b64decode(val.encode())
+    #print(val)
+    
+    
     with open("doc.tsr", "wb") as file:
         file.write(base64.b64decode(listStega[2].encode()))
     os.system("rm rep.txt")
@@ -199,25 +201,12 @@ def verifAttestation():
     with open('rep.txt') as f:
         first_line = f.readline()
         first_line = first_line.strip()
-        
-    if listStega[0] == listQrcode[0]:
-        TEST1 = True
-        print("okok1")
-    else:
-        TEST1 = False
-        
-    if listStega[1] == listQrcode[1]:
-        TEST2 = True
-        print("okok2")
-    else:
-        TEST2 = False        
-            
     if 'OK' in first_line:
         TEST3 = True
         print("okok3")
     else:
         TEST3 = False   
-    if (TEST1 == True & TEST2 == True & TEST3 == True ): 
+    if (TEST3 == True ): 
         return 1
     else:
         return 2
