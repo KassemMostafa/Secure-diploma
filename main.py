@@ -2,18 +2,16 @@
 # coding=utf8
 
 
-import crypt
 from PIL import Image, ImageDraw, ImageFont
 import segno
-import time
 import cv2
 import os
 import base64
-import rsa
 import OpenSSL
 from OpenSSL import crypto
-import qrcode
 import json
+import os
+
 
 # pip install segno
 # pip install qrcode
@@ -91,7 +89,6 @@ def decodeMessage(message_retrouve):
     if len(listOfWords) > 0:
         part3 = listOfWords[1]
 
-
     return [part1, part2, part3]
 
 
@@ -103,8 +100,8 @@ def addStegano(imgName, stringToHide):
 ###########################################################QRCode############################################################################################
 def getQRcode():
     # ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
-    img = cv2.imread("diplome.png")
-    crop_img = img[940:1105, 1430:1600]
+    img = cv2.imread("cert.png")
+    crop_img = img[900:1185, 1400:1680]
     cv2.imwrite("qrcode2.png", crop_img)
     img = cv2.imread("qrcode2.png")
     det = cv2.QRCodeDetector()
@@ -174,18 +171,34 @@ def createBaseDiploma(prenom,nom,diplome): #prend nom, prenom et intitulé, crea
 	return 0 
 
 def verifAttestation():
-	message_retrouve = recuperer(Image.open("diplome.png"), 64)
-	listStega = decodeMessage(message_retrouve)
-	print("donné de l'image: " + listStega[0] + " || " + listStega[1] + " || " + listStega[2] )
-	val = getQRcode()
-	listQrcode = decodeMessage(val)
-	print("donné du Qrcode: " + listQrcode[0] + " || " + listQrcode[1] + " || " + listQrcode[2] )
-	#Je récupére le code:
-	#tsr = 
-	#with open("file.tsr", "wb") as f:
-	#f.write(encoder.encode(tsr))
-	#print("vérification fini")
-	#return 1
+    message_retrouve = recuperer(Image.open("diplome.png"), 7392)
+    listStega = decodeMessage(message_retrouve)
+    listStega[1] = listStega[1].replace('0', '')
+    listStega[1] = listStega[1].replace(' ', '')
+    print("donné de l'image: " +
+          listStega[0] + " || " + listStega[1] + " || " + "listStega[2]" )
+    val = getQRcode()
+    print(val)
+    #val = base64.b64decode(val.encode())
+    #print(val) 
+    with open("doc.tsr", "wb") as file:
+        file.write(base64.b64decode(listStega[2].encode()))
+    os.system("rm rep.txt")
+    cmd = "openssl ts -verify -in doc.tsr -queryfile diplome.tsq -CAfile cacert.pem -untrusted tsa.crt >> rep.txt"
+    os.system(cmd)
+
+    with open('rep.txt') as f:
+        first_line = f.readline()
+        first_line = first_line.strip()
+    if 'OK' in first_line:
+        TEST3 = True
+        print("okok3")
+    else:
+        TEST3 = False   
+    if (TEST3 == True ): 
+        return 1
+    else:
+        return 2
 
 ############################################TimeStamp###################################################################################
 def createTimestamp():
@@ -206,6 +219,7 @@ def createSteganoContent(imgName, prenom, nom, diplome): #creates stegano conten
 	timestamp = createTimestamp()
 	result = steg + ' || ' + timestamp
 	return result
+
 
 
 
