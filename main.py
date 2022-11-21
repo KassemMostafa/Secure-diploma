@@ -1,10 +1,13 @@
 #!/usr/bin/python
 # coding=utf8
 
-from PIL import Image
+
+from PIL import Image, ImageDraw, ImageFont
+import segno
 import time
 import cv2
 import os
+#pip install segno
 #pip install qrcode
 #pip install cv2
 #pip install opencv-python
@@ -56,7 +59,6 @@ def recuperer(image,taille):
 		message += chr(int(rep_binaire, 2))
 	return message
 
-
 def decodeMessage(message_retrouve):
     separator = ' ||'
     part1 = message_retrouve.split(separator, 1)[0] 
@@ -89,7 +91,56 @@ def getQRcode():
 	val, pts, st_code=det.detectAndDecode(img)
 	print(val)
     
-## Extraire le code d'une image:
+
+def extrairePreuve(): #à afficher lors de la verification du qrcode
+	return 0
+
+def creerPass(): # utiliser lors de la création d'une attestation
+	return 1
+
+def creerQRCode():
+	
+	qr = segno.make("Mostafa Kassem | Ingénieur | Timestamp ", encoding="utf-8")
+	qr.save('qrcode.png',light=None, scale= 5)
+	return 0
+
+def creerTimestamp():
+	os.system("openssl ts -query -data certif.png -no_nonce -sha512 -cert -out file.tsq")
+	os.system('curl -H "Content-Type: application/timestamp-query" --data-binary "@file.tsq" https://freetsa.org/tsr > file.tsr')
+	return 0
+
+def creerAttestation(): #lancé par l'admin à la création d'une attestation
+	if (1 != creerPass()):
+		return 0
+	else:
+		#accès signature (en attente de fichier de config)
+		img = Image.open("Blank_Certif.png")
+		draw = ImageDraw.Draw(img)
+		font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 70)
+		draw.text((470, 480),"CERTIFICAT INGENIEUR ",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black") #draws on top line	
+		draw.text((680, 600),"DÉLIVRÉ À",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
+		draw.text((580, 720),"Mostafa Kassem",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
+		creerQRCode()	
+		qr = Image.open("qrcode.png")
+		img.paste(qr, (1430,930))
+		img = steganoAdd(img)
+		img.save("certif.png")
+		os.remove("qrcode.png")
+		return 1
+
+
+
+def steganoAdd(img):
+
+	prenom = "aaaaa"
+	nom = "Kassem"
+	diplome = "ingenieur"
+	timestamp = "10h06"
+	steg = nom + " " +  prenom + " || " + diplome + " || " + timestamp 
+	cacher(img, steg)
+	return img 
+
+# programme de demonstration
 
 nom_fichier = "certif.png"
 message_a_traiter = 40    #A MODIFIER
@@ -101,7 +152,15 @@ print(listrep)
 
 
 getQRcode()
+
+creerAttestation()
+print("attestation cree")
+## Extraire le code d'une image:
+
+
+
 #https://gist.github.com/void-elf/0ed0e136d6d342974257c93f571e28b5
 
 
 
+#openssl ca -in PKI/tempservercert.pem -cert PKI/certs/webca.pem -keyfile PKI/private/webca.key -notext -out PKI/certs/serveur1.pem-notext -config PKI/ca-server-cert.cnf
