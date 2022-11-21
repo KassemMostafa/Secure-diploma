@@ -76,9 +76,6 @@ def decodeMessage(message_retrouve):
     listOfWords = message_retrouve.split('|| ', 1)
     if len(listOfWords) > 0: 
         part3 = listOfWords[1]
-	#base64_bytes = part3.encode('ascii')
-	#message_bytes = base64.b64decode(base64_bytes)
-	#message = message_bytes.decode('ascii')
     print(part3)
     
     return [part1 , part2, part3]
@@ -98,23 +95,19 @@ def decodeMessage(message_retrouve):
     listOfWords = message_retrouve.split('|| ', 1)
     if len(listOfWords) > 0: 
         part3 = listOfWords[1]
-	#base64_bytes = part3.encode('ascii')
-	#message_bytes = base64.b64decode(base64_bytes)
-	#message = message_bytes.decode('ascii')
-    print(part3)
-    
+	
     return [part1 , part2, part3]
     
 
 
 def getQRcode():
-	img = cv2.imread("certif.png")
+	img = cv2.imread("certif.png") #ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
 	crop_img = img[940:1105, 1430:1600]
 	cv2.imwrite("qrcode2.png", crop_img)
 	img=cv2.imread("qrcode2.png")
 	det=cv2.QRCodeDetector()
 	val, pts, st_code=det.detectAndDecode(img)
-	print(val)
+	return val
 
 def extrairePreuve(): #à afficher lors de la verification du qrcode
 	return 0
@@ -179,19 +172,27 @@ def steganoAdd(img,prenom,nom,diplome):
 # programme de demonstration
 
 
+def verifAttestation():
+	message_retrouve = recuperer(Image.open("certif.png"), 64)
+	listStega = decodeMessage(message_retrouve)
+	print("donné de l'image: " + listStega[0] + " || " + listStega[1] + " || " + listStega[2] )
+	val = getQRcode()
+	listQrcode = decodeMessage(val)
+	print("donné du Qrcode: " + listQrcode[0] + " || " + listQrcode[1] + " || " + listQrcode[2] )
+	
+
+	#Je récupére le code:
+	#tsr = 
+	#with open("file.tsr", "wb") as f:
+	#f.write(encoder.encode(tsr))
+	#print("vérification fini")
+	#return 1
 
 
 creerAttestation()
 print("attestation cree")
 ## Extraire le code d'une image:
-
-
-message_retrouve = recuperer(Image.open("certif.png"), 64)
-print(message_retrouve)
-listrep = decodeMessage(message_retrouve)
-print(listrep)
-
-getQRcode()
+print(verifAttestation())
 
 
 #https://gist.github.com/void-elf/0ed0e136d6d342974257c93f571e28b5
