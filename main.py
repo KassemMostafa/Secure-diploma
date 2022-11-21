@@ -63,9 +63,10 @@ def creerPass(): # utiliser lors de la création d'une attestation
 
 def creerQRCode(prenom, nom, diplome):
 	 #TODO qrcode signature =>encoder en base64
-
+	signature = 0
 	
-	qr = segno.make("Mostafa Kassem | Ingénieur | Signature ", encoding="utf-8")
+	qr = segno.make(prenom + ' ' + nom + ' || ' + diplome + ' || ' + signature, encoding="utf-8")
+
 	qr.save('qrcode.png',light=None, scale= 5)
 	return 0
 
