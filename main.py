@@ -191,6 +191,7 @@ def verifAttestation():
 
     with open("doc.tsr", "wb") as file:
         file.write(base64.b64decode(listStega[2].encode()))
+    os.system("rm rep.txt")
     cmd = "openssl ts -verify -in doc.tsr -queryfile diplome.tsq -CAfile cacert.pem -untrusted tsa.crt >> rep.txt"
     os.system(cmd)
 
@@ -199,6 +200,7 @@ def verifAttestation():
         first_line = first_line.strip()
     if 'OK' in first_line:
         TEST1 = True
+        print("okok")
     else:
         TEST1 = False
 
