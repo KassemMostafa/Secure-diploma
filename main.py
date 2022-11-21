@@ -119,27 +119,11 @@ def addQRCode():
 	img.save("diplome.png")
 
 def creerQRCode(signature):
-	 #TODO qrcode signature =>encoder en base64
 	qr = segno.make(signature)
 	qr.save('qrcode.png',light=None, scale= 3)
 	addQRCode()
 
 ####################################################Certificat###########################################################################
-def signdiplome(data):
-
-	key_file = open("PKIprojet/diplome.key.pem", "r")
-	key = key_file.read()
-	key_file.close()
-	if key.startswith('-----BEGIN '):
-		pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key)
-	else:
-		pkey = crypto.load_pkcs12(key).get_privatekey()
-	print(pkey)
-	sign = OpenSSL.crypto.sign(pkey, data, "sha256") 
-	print(sign)
-	data_base64 = base64.b64encode(sign)
-	print(data_base64)
-	return data_base64
 
 def createSignature(data): #creates a signature based on the same data used by stegano	
 	key_file = open("PKIprojet/diplome.key.pem", "r")
@@ -149,12 +133,8 @@ def createSignature(data): #creates a signature based on the same data used by s
 		pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key)
 	else:
 		pkey = crypto.load_pkcs12(key).get_privatekey()
-	print(pkey)
 	sign = OpenSSL.crypto.sign(pkey, data, "sha512") 
-	print(sign)
 	data_base64 = base64.b64encode(sign).decode()
-	print(data_base64)
-	print(len(data_base64))
 	return data_base64
 
 ######################################################Diplome###########################################################################
@@ -224,7 +204,8 @@ def createSteganoContent(imgName, prenom, nom, diplome): #creates stegano conten
 
 
 def CreateDiploma(query): #Object { prenom: "", nom: "", diplome: "" }
-	j = json.loads(query)
+	query2 = query.lstrip[10:-1] 
+	j = json.loads(query2)
 	prenom = j["prenom"]
 	nom = j["nom"]
 	diplome = j["diplome"]
