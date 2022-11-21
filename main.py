@@ -15,7 +15,6 @@ import os
 
 # pip install segno
 # pip install qrcode
-# pip install cv2
 # pip install opencv-python
 
 
@@ -211,6 +210,7 @@ def CreateDiploma(query): #Object { prenom: "", nom: "", diplome: "" }
 	diplome = j["diplome"]
 	createBaseDiploma(prenom, nom, diplome)
 	result = createSteganoContent("diplome.png", prenom, nom, diplome)
+	addStegano("diplome.png",result)
 	signature = createSignature(result)
 	creerQRCode(signature)
 	return 0
@@ -218,4 +218,5 @@ def CreateDiploma(query): #Object { prenom: "", nom: "", diplome: "" }
 query = '{"query":{"prenom":"eazeae","nom":"azeaze","diplome":"ezaeaz"}}'
 
 CreateDiploma(query)
+verifAttestation()
 #https://gist.github.com/void-elf/0ed0e136d6d342974257c93f571e28b5
