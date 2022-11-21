@@ -74,6 +74,7 @@ def decodeMessage(message_retrouve):
     listOfWords = message_retrouve.split('|| ', 1)
     if len(listOfWords) > 0: 
         part3 = listOfWords[1]
+	
     return [part1 , part2, part3]
     
 
@@ -95,7 +96,7 @@ def creerPass(): # utiliser lors de la création d'une attestation
 
 def creerQRCode():
 	
-	qr = segno.make("Mostafa Kassem | Ingénieur | Timestamp ", encoding="utf-8")
+	qr = segno.make("Mostafa Kassem || Ingénieur || Timestamp ", encoding="utf-8")
 	qr.save('qrcode.png',light=None, scale= 5)
 	return 0
 
@@ -130,8 +131,9 @@ def steganoAdd(img):
 	prenom = "Mostafa"
 	nom = "Kassem"
 	diplome = "ingenieur"
-	timestamp = "10h06"
+	timestamp = "1454564|25464565"
 	steg = nom + " " +  prenom + " || " + diplome + " || " + timestamp 
+	
 	cacher(img, steg)
 	return img 
 
@@ -140,18 +142,24 @@ def steganoAdd(img):
 
 def verifAttestation():
 	message_retrouve = recuperer(Image.open("certif.png"), 64)
-	listrep = decodeMessage(message_retrouve)
-	print("donné de l'image: " + listrep[0] + " || " + listrep[1] + " || " + listrep[2] )
+	listStega = decodeMessage(message_retrouve)
+	print("donné de l'image: " + listStega[0] + " || " + listStega[1] + " || " + listStega[2] )
 	val = getQRcode()
-	print("Donné du Qrcode: " + val)
-	print("vérification fini")
-	return 1
+	listQrcode = decodeMessage(val)
+	print("donné du Qrcode: " + listQrcode[0] + " || " + listQrcode[1] + " || " + listQrcode[2] )
+	
+
+	#Je récupére le code:
+	#tsr = 
+	#with open("file.tsr", "wb") as f:
+	#f.write(encoder.encode(tsr))
+	#print("vérification fini")
+	#return 1
 
 
 creerAttestation()
 print("attestation cree")
 ## Extraire le code d'une image:
-
 print(verifAttestation())
 
 
