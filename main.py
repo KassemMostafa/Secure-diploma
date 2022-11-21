@@ -4,16 +4,22 @@
 
 from PIL import Image, ImageDraw, ImageFont
 import segno
-import time
 import cv2
 import os
 import base64
+import OpenSSL
+from OpenSSL import crypto
+import json
+import os
+
 
 # pip install segno
 # pip install qrcode
 # pip install cv2
 # pip install opencv-python
 
+
+#######################################################Stéganographie##################################################################
 
 def vers_8bit(c):
     chaine_binaire = bin(ord(c))[2:]
@@ -83,14 +89,19 @@ def decodeMessage(message_retrouve):
     if len(listOfWords) > 0:
         part3 = listOfWords[1]
 
-
     return [part1, part2, part3]
 
 
+def addStegano(imgName, stringToHide):
+	img = Image.open(imgName)
+	cacher(img, stringToHide)
+	img.save(imgName)
+
+###########################################################QRCode############################################################################################
 def getQRcode():
     # ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
-    img = cv2.imread("diplome.png")
-    crop_img = img[940:1105, 1430:1600]
+    img = cv2.imread("cert.png")
+    crop_img = img[900:1185, 1400:1680]
     cv2.imwrite("qrcode2.png", crop_img)
     img = cv2.imread("qrcode2.png")
     det = cv2.QRCodeDetector()
@@ -101,107 +112,128 @@ def getQRcode():
 def extrairePreuve():  # à afficher lors de la verification du qrcode
     return 0
 
+def addQRCode():
+	qr = Image.open("qrcode.png")
+	img = Image.open("diplome.png")
+	img.paste(qr, (1390,900))
+	img.save("diplome.png")
 
-def creerQRCode(prenom, nom, diplome):
-    # TODO qrcode signature =>encoder en base64
-    signature = "qfoqinoi"
+def creerQRCode(signature):
+	 #TODO qrcode signature =>encoder en base64
+	qr = segno.make(signature)
+	qr.save('qrcode.png',light=None, scale= 3)
+	addQRCode()
 
-    qr = segno.make(prenom + ' ' + nom + ' || ' + diplome +
-                    ' || ' + signature, encoding="utf-8")
+####################################################Certificat###########################################################################
+def signdiplome(data):
 
-    qr.save('qrcode.png', light=None, scale=5)
-    return 0
+	key_file = open("PKIprojet/diplome.key.pem", "r")
+	key = key_file.read()
+	key_file.close()
+	if key.startswith('-----BEGIN '):
+		pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key)
+	else:
+		pkey = crypto.load_pkcs12(key).get_privatekey()
+	print(pkey)
+	sign = OpenSSL.crypto.sign(pkey, data, "sha256") 
+	print(sign)
+	data_base64 = base64.b64encode(sign)
+	print(data_base64)
+	return data_base64
 
+def createSignature(data): #creates a signature based on the same data used by stegano	
+	key_file = open("PKIprojet/diplome.key.pem", "r")
+	key = key_file.read()
+	key_file.close()
+	if key.startswith('-----BEGIN '):
+		pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key)
+	else:
+		pkey = crypto.load_pkcs12(key).get_privatekey()
+	print(pkey)
+	sign = OpenSSL.crypto.sign(pkey, data, "sha512") 
+	print(sign)
+	data_base64 = base64.b64encode(sign).decode()
+	print(data_base64)
+	print(len(data_base64))
+	return data_base64
 
-def creerTimestamp():
-    # TODO create time stamp
-    # DONE
-    os.system(
-        'openssl ts -query -data diplome.png -no_nonce -sha512 -cert -out diplome.tsq')
-    os.system('curl -H "Content-Type: application/timestamp-query" --data-binary "@diplome.tsq" https://freetsa.org/tsr > diplome.tsr')
-    data = open("diplome.tsr", "rb").read()
-    timestamp = base64.b64encode(data).decode()
-    return timestamp
-
-
-def steganoAdd(img, prenom, nom, diplome):
-
-    prenom = "Mostafa"
-    nom = "Kassem"
-    diplome = "ingenieur"
-
-    # TODO append timestamp in base64 to steg and measure size
-    timestamp = creerTimestamp()
-    steg = nom + " " + prenom + " || " + diplome + " "
-    n = len(steg)
-    if (n < 60):
-        y = 60 - n
-        while (y > 0):
-            steg += "0"
-            y -= 1
-    result = steg + ' || ' + timestamp
-    print(len(result))
-    cacher(img, result)
-    return img
-
-
-def creerAttestation():  # lancé par l'admin à la création d'une attestation
-    query = "Object { prenom: "", nom: "", diplome: "" }"
-
-    # Nomdefichier = prenom_nom_diplome.png
-    prenom = "Kassem"
-    nom = "Mostafa"
-    diplome = "ingenieur"
-    # TODO accès signature (en attente de fichier de config)
-    img = Image.open("Blank_Certif.png")
-    draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype(
-        "/usr/share/fonts/truetype/freefont/FreeMono.ttf", 70)
-    draw.text((470, 480), "CERTIFICAT INGENIEUR ", (0, 0, 0), font=font,
-              align='left', stroke_width=2, stroke_fill="black")  # draws on top line
-    draw.text((680, 600), "DÉLIVRÉ À", (0, 0, 0), font=font,
-              align='left', stroke_width=2, stroke_fill="black")
-    draw.text((580, 720), "Kassem Mostafa", (0, 0, 0), font=font,
-              align='left', stroke_width=2, stroke_fill="black")
-    creerQRCode(prenom, nom, diplome)
-    qr = Image.open("qrcode.png")
-    img.paste(qr, (1430, 930))
-    img.save("diplome.png")
-    img = steganoAdd(img, prenom, nom, diplome)
-    img.save("diplome.png")
-    os.remove("qrcode.png")
-    return 1
-
-
-# programme de demonstration
-
+######################################################Diplome###########################################################################
+def createBaseDiploma(prenom,nom,diplome): #prend nom, prenom et intitulé, create diploma without qrcode or stégano
+	nom = nom.upper()
+	diplome = diplome.upper()
+	img = Image.open("Blank_Certif.png")
+	draw = ImageDraw.Draw(img)
+	font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 70)
+	draw.text((470, 480),"CERTIFICAT " + diplome ,(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black") #draws on top line	
+	draw.text((680, 600),"DÉLIVRÉ À",(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
+	draw.text((580, 720), prenom + " " + nom ,(0,0,0),font=font,align='left',stroke_width=2,stroke_fill="black")
+	img.save("diplome.png")
+	return 0 
 
 def verifAttestation():
     message_retrouve = recuperer(Image.open("diplome.png"), 7392)
     listStega = decodeMessage(message_retrouve)
     listStega[1] = listStega[1].replace('0', '')
+    listStega[1] = listStega[1].replace(' ', '')
     print("donné de l'image: " +
-          listStega[0] + " || " + listStega[1] + " || " + "listStega[2] ")
+          listStega[0] + " || " + listStega[1] + " || " + "listStega[2]" )
     val = getQRcode()
-    listQrcode = decodeMessage(val)
-    print("donné du Qrcode: " +
-          listQrcode[0] + " || " + listQrcode[1] + " || " + listQrcode[2])
+    print(val)
+    #val = base64.b64decode(val.encode())
+    #print(val) 
+    with open("doc.tsr", "wb") as file:
+        file.write(base64.b64decode(listStega[2].encode()))
+    os.system("rm rep.txt")
+    cmd = "openssl ts -verify -in doc.tsr -queryfile diplome.tsq -CAfile cacert.pem -untrusted tsa.crt >> rep.txt"
+    os.system(cmd)
 
-    # Je récupére le code:
-    # tsr =
-    # with open("file.tsr", "wb") as f:
-    # f.write(encoder.encode(tsr))
-    #print("vérification fini")
-    # return 1
+    with open('rep.txt') as f:
+        first_line = f.readline()
+        first_line = first_line.strip()
+    if 'OK' in first_line:
+        TEST3 = True
+        print("okok3")
+    else:
+        TEST3 = False   
+    if (TEST3 == True ): 
+        return 1
+    else:
+        return 2
+
+############################################TimeStamp###################################################################################
+def createTimestamp():
+	os.system('openssl ts -query -data diplome.png -no_nonce -sha512 -cert -out diplome.tsq')
+	os.system('curl -H "Content-Type: application/timestamp-query" --data-binary "@diplome.tsq" https://freetsa.org/tsr > diplome.tsr')
+	data = open("diplome.tsr", "rb").read()
+	timestamp = base64.b64encode(data).decode()
+	return timestamp
+
+def createSteganoContent(imgName, prenom, nom, diplome): #creates stegano content including timestamp
+	steg = nom + " " +  prenom + " || " + diplome + " " 
+	n = len(steg)
+	if (n < 60):
+		y = 60 - n
+		while (y > 0):
+			steg += "0"
+			y -= 1
+	timestamp = createTimestamp()
+	result = steg + ' || ' + timestamp
+	return result
 
 
-creerAttestation()
-print("attestation cree")
-# Extraire le code d'une image:
-print(verifAttestation())
 
 
-# https://gist.github.com/void-elf/0ed0e136d6d342974257c93f571e28b5
+def CreateDiploma(query): #Object { prenom: "", nom: "", diplome: "" }
+	j = json.loads(query)
+	prenom = j["prenom"]
+	nom = j["nom"]
+	diplome = j["diplome"]
+	createBaseDiploma(prenom, nom, diplome)
+	result = createSteganoContent("diplome.png", prenom, nom, diplome)
+	signature = createSignature(result)
+	creerQRCode(signature)
+	return 0
 
-
-# openssl ca -in PKI/tempservercert.pem -cert PKI/certs/webca.pem -keyfile PKI/private/webca.key -notext -out PKI/certs/serveur1.pem-notext -config PKI/ca-server-cert.cnf
+query = '{ "prenom":"Mostafa", "nom":"Kassem", "diplome":"ING"}'
+CreateDiploma(query)
+#https://gist.github.com/void-elf/0ed0e136d6d342974257c93f571e28b5
