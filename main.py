@@ -8,6 +8,9 @@ import time
 import cv2
 import os
 import base64
+import os
+import sys
+import subprocess
 
 # pip install segno
 # pip install qrcode
@@ -82,7 +85,6 @@ def decodeMessage(message_retrouve):
     listOfWords = message_retrouve.split('|| ', 1)
     if len(listOfWords) > 0:
         part3 = listOfWords[1]
-
 
     return [part1, part2, part3]
 
@@ -189,12 +191,17 @@ def verifAttestation():
 
     with open("doc.tsr", "wb") as file:
         file.write(base64.b64decode(listStega[2].encode()))
-    os.system("openssl ts -verify -in doc.tsr -queryfile diplome.tsq -CAfile cacert.pem -untrusted tsa.crt")
-    # Je récupére le code:
-    # tsr =
-    # with open("file.tsr", "wb") as f:
-    # f.write(encoder.encode(tsr))
-    #print("vérification fini")
+    cmd = "openssl ts -verify -in doc.tsr -queryfile diplome.tsq -CAfile cacert.pem -untrusted tsa.crt >> rep.txt"
+    os.system(cmd)
+
+    with open('rep.txt') as f:
+        first_line = f.readline()
+        first_line = first_line.strip()
+    if 'OK' in first_line:
+        TEST1 = True
+    else:
+        TEST1 = False
+
     return 1
 
 
