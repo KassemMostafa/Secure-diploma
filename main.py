@@ -76,25 +76,6 @@ def decodeMessage(message_retrouve):
     listOfWords = message_retrouve.split('|| ', 1)
     if len(listOfWords) > 0: 
         part3 = listOfWords[1]
-    print(part3)
-    
-    return [part1 , part2, part3]
-
-
-def decodeMessage(message_retrouve):
-    separator = ' ||'
-    part1 = message_retrouve.split(separator, 1)[0] 
-
-    listOfWords = message_retrouve.split(' || ', 1)
-    if len(listOfWords) > 0: 
-        message_retrouve = listOfWords[1]
-
-    separator = ' ||'
-    part2 = message_retrouve.split(separator, 1)[0] 
-
-    listOfWords = message_retrouve.split('|| ', 1)
-    if len(listOfWords) > 0: 
-        part3 = listOfWords[1]
 	
     return [part1 , part2, part3]
     
@@ -114,7 +95,7 @@ def extrairePreuve(): #à afficher lors de la verification du qrcode
 
 def creerQRCode(prenom, nom, diplome):
 	 #TODO qrcode signature =>encoder en base64
-	signature = 0
+	signature = "qfoqinoi"
 	
 	qr = segno.make(prenom + ' ' + nom + ' || ' + diplome + ' || ' + signature, encoding="utf-8")
 
@@ -126,11 +107,32 @@ def creerTimestamp():
 	#DONE
 	os.system('openssl ts -query -data diplome.png -no_nonce -sha512 -cert -out diplome.tsq')
 	os.system('curl -H "Content-Type: application/timestamp-query" --data-binary "@diplome.tsq" https://freetsa.org/tsr > diplome.tsr')
-	data = open("diplome.tsr", "r").read()
-	timestamp = base64.b64encode(data)
+	data = open("diplome.tsr", "rb").read()
+	timestamp = base64.b64encode(data).decode()
 	return timestamp
 
-def creerAttestation(query): #lancé par l'admin à la création d'une attestation
+def steganoAdd(img,prenom,nom,diplome):
+
+	prenom = "Mostafa"
+	nom = "Kassem"
+	diplome = "ingenieur"
+	
+	#TODO append timestamp in base64 to steg and measure size
+	timestamp = creerTimestamp()
+	steg = nom + " " +  prenom + " || " + diplome + " " 
+	n = len(steg)
+	if (n < 60):
+		y = 60 - n
+		while (y > 0):
+			steg += "0"
+			y -= 1
+	result = steg + ' || ' + timestamp
+	print(result)
+	print(len(result))
+	cacher(img, steg)
+	return img 
+
+def creerAttestation(): #lancé par l'admin à la création d'une attestation
 	query = "Object { prenom: "", nom: "", diplome: "" }"
 
 	#Nomdefichier = prenom_nom_diplome.png
@@ -154,21 +156,6 @@ def creerAttestation(query): #lancé par l'admin à la création d'une attestati
 	return 1
 
 
-
-def steganoAdd(img,prenom,nom,diplome):
-
-	prenom = "Mostafa"
-	nom = "Kassem"
-	diplome = "ingenieur"
-	
-	#TODO append timestamp in base64 to steg and measure size
-	
-	
-	timestamp = creerTimestamp()
-	steg = nom + " " +  prenom + " || " + diplome + " || " + timestamp
-	cacher(img, steg)
-	return img 
-
 # programme de demonstration
 
 
@@ -189,7 +176,7 @@ def verifAttestation():
 	#return 1
 
 
-creerAttestation("Object { prenom: "", nom: "", diplome: "" }")
+creerAttestation()
 print("attestation cree")
 ## Extraire le code d'une image:
 print(verifAttestation())
