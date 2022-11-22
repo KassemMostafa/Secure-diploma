@@ -51,39 +51,9 @@ def verifySignature1(signature, data): #openssl lib
 
     
 
-def signDocument2(data): #cryptography Lib
-    with open('../PKI/private/serveur1.key', 'rb') as key_file: 
-        private_key = serialization.load_pem_private_key(
-            key_file.read(),
-            password = b"test",
-            backend = default_backend(),
-        )
-    data = bytes(data, encoding='ascii')
-    signData = private_key.sign(data,padding.PSS(mgf = padding.MGF1(hashes.SHA256()),salt_length = padding.PSS.MAX_LENGTH,),hashes.SHA256(),)
-    encodedSig = base64.b64encode(signData)
-
-    print("-----BEGIN DATA REQUEST-----")
-    print(data)
-    print("-----END DATA REQUEST-----")
-    print("\n")
-    print("Example 1")
-    print("-----BEGIN SIGNATURE-----")
-    print(encodedSig)
-    print("-----END SIGNATURE-----")
-    print("\n")
-    print("Example 2")
-    print("-----BEGIN SIGNATURE-----")
-    print (encodedSig.decode('ascii'))
-    print("-----END SIGNATURE-----")
-    print("\n")
-    print("Example 3")
-    print("-----BEGIN SIGNATURE-----")
-    print(str(encodedSig).replace("b'","").replace("'",""))
-    print("-----END SIGNATURE-----")
-    return encodedSig
 
 encodedSig1 = signDocument1("Hello World")
-encodedSig2 = signDocument2("Hello World")
+
 ver = verifySignature1(encodedSig1, "Hello World")
 print(ver)
 

@@ -99,7 +99,7 @@ def addStegano(imgName, stringToHide):
 ###########################################################QRCode############################################################################################
 def getQRcode():
     # ToDo correct error libpng warning: iCCP: known incorrect sRGB profile
-    img = cv2.imread("cert.png")
+    img = cv2.imread("diplome.png")
     crop_img = img[900:1185, 1400:1680]
     cv2.imwrite("qrcode2.png", crop_img)
     img = cv2.imread("qrcode2.png")
@@ -163,6 +163,20 @@ def createBaseDiploma(prenom,nom,diplome): #prend nom, prenom et intitulé, crea
 	img.save("diplome.png")
 	return 0 
 
+def verifySignature1(signature, data): #openssl lib
+    cert_file = open("../PKI/certs/serveur1.pem")
+    certContent = cert_file.read()
+    cert_file.close()
+    cert = crypto.load_certificate(crypto.FILETYPE_PEM, certContent)
+    encodedData = bytes(data, encoding='ascii')
+    decodedSig = base64.b64decode(signature)
+    try:     
+        crypto.verify(cert, decodedSig, encodedData, "sha256")
+    except:
+        return 0
+    return 1
+
+
 def verifAttestation():
     message_retrouve = recuperer(Image.open("diplome.png"), 7392)
     listStega = decodeMessage(message_retrouve)
@@ -170,10 +184,11 @@ def verifAttestation():
     listStega[1] = listStega[1].replace(' ', '')
     print("donné de l'image: " +
           listStega[0] + " || " + listStega[1] + " || " + "listStega[2]" )
-    val = getQRcode()
-    print(val)
-    #val = base64.b64decode(val.encode())
-    #print(val) 
+    
+    
+    signature = getQRcode()
+
+    
     with open("doc.tsr", "wb") as file:
         file.write(base64.b64decode(listStega[2].encode()))
     os.system("rm rep.txt")
@@ -183,6 +198,10 @@ def verifAttestation():
     with open('rep.txt') as f:
         first_line = f.readline()
         first_line = first_line.strip()
+        
+    TEST2 = verifySignature(signature, message_retrouve)
+    print(TEST2)
+    
     if 'OK' in first_line:
         TEST3 = True
         print("okok3")
