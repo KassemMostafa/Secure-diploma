@@ -1,0 +1,47 @@
+# pour generer une requete de certificat CA intermediaire
+
+[ req ]
+default_bits		= 2048
+default_keyfile 	= private/subca.key
+default_md			= sha256
+distinguished_name	= req_distinguished_name
+x509_extensions		= subca_req
+string_mask		= nombstr
+
+[ req_distinguished_name ]
+countryName				= Pays
+countryName_default		= FR
+countryName_min			= 2
+countryName_max			= 2
+
+stateOrProvinceName		= Etat, province ou departement
+stateOrProvinceName_default	= 
+
+localityName			= Ville
+localityName_default	= 
+
+organizationName			= Organisation
+organizationName_default	= 
+
+organizationalUnitName		= Unite organisationnelle
+organizationalUnitName_default	= 
+
+commonName				= Nom commun
+commonName_default		= 
+commonName_max			= 64
+
+emailAddress			= Adresse mail
+emailAddress_max		= 64
+
+
+
+[ subca_req ]
+
+
+basicConstraints	= critical, CA:true
+subjectKeyIdentifier	= hash
+authorityKeyIdentifier	= keyid, issuer:always
+keyUsage		= critical, keyCertSign, cRLSign
+# nsCertType		= sslCA, emailCA, objCA
+# nsComment		= "Requete de signature de certificat"
+# subjectAltName	= email:copy

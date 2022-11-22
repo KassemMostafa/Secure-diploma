@@ -125,16 +125,21 @@ def creerQRCode(signature):
 ####################################################Certificat###########################################################################
 
 def createSignature(data): #creates a signature based on the same data used by stegano	
-	key_file = open("PKIprojet/diplome.key.pem", "r")
-	key = key_file.read()
-	key_file.close()
-	if key.startswith('-----BEGIN '):
-		pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key)
-	else:
-		pkey = crypto.load_pkcs12(key).get_privatekey()
-	sign = OpenSSL.crypto.sign(pkey, data, "sha512") 
-	data_base64 = base64.b64encode(sign).decode()
-	return data_base64
+	# key_file = open("PKIprojet/private.pem", "r")
+	# key = key_file.read()
+	# key_file.close()
+	# if key.startswith('-----BEGIN '):
+	# 	pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key, passphrase= b"test")
+	# else:
+	# 	pkey = crypto.load_pkcs12(key).get_privatekey()
+	# sign = OpenSSL.crypto.sign(pkey, data, "sha512") 
+	# data_base64 = base64.b64encode(sign).decode()
+	# print(data_base64)
+	os.system("openssl dgst -sha256 -verify PKIprojet/public.pem -signature /tmp/sign.sha256 diplome.png")
+	os.system("openssl base64 -in /tmp/sign.sha256 -out signature.txt")
+	text_file = open("signature.txt", "r")
+	data64 = text_file.read()
+	return data64
 
 ######################################################Diplome###########################################################################
 def createBaseDiploma(prenom,nom,diplome): #prend nom, prenom et intitulé, create diploma without qrcode or stégano
