@@ -105,6 +105,7 @@ def getQRcode():
     img = cv2.imread("qrcode2.png")
     det = cv2.QRCodeDetector()
     val, pts, st_code = det.detectAndDecode(img)
+    os.remove("qrcode2.png")
     return val
 
 
@@ -112,10 +113,11 @@ def extrairePreuve():  # à afficher lors de la verification du qrcode
     return 0
 
 def addQRCode():
-	qr = Image.open("qrcode.png")
-	img = Image.open("diplome.png")
-	img.paste(qr, (1390,900))
-	img.save("diplome.png")
+    qr = Image.open("qrcode.png")
+    img = Image.open("diplome.png")
+    img.paste(qr, (1390,900))
+    img.save("diplome.png")
+    os.remove("qrcode.png")
 
 def creerQRCode(signature):
 	qr = segno.make(signature)
@@ -124,22 +126,29 @@ def creerQRCode(signature):
 
 ####################################################Certificat###########################################################################
 
-def createSignature(data): #creates a signature based on the same data used by stegano	
-	# key_file = open("PKIprojet/private.pem", "r")
-	# key = key_file.read()
-	# key_file.close()
-	# if key.startswith('-----BEGIN '):
-	# 	pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key, passphrase= b"test")
-	# else:
-	# 	pkey = crypto.load_pkcs12(key).get_privatekey()
-	# sign = OpenSSL.crypto.sign(pkey, data, "sha512") 
-	# data_base64 = base64.b64encode(sign).decode()
-	# print(data_base64)
-	os.system("openssl dgst -sha256 -verify PKIprojet/public.pem -signature /tmp/sign.sha256 diplome.png")
-	os.system("openssl base64 -in /tmp/sign.sha256 -out signature.txt")
-	text_file = open("signature.txt", "r")
-	data64 = text_file.read()
-	return data64
+def createSignature(data): #creates a signature based on the same data used by stegano, returns signature encoded to base64
+    file = open("PKI/private/serveur1.key")
+    key = file.read()
+    file.close()
+    pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key, b"test")
+    encodedData = bytes(data, encoding='ascii')
+    signData = OpenSSL.crypto.sign(pkey, encodedData, "sha256")
+    encodedSig = base64.b64encode(signData)
+    return encodedSig
+
+def verifySignature(signature, data): #signature (ce que create signature a re)
+    cert_file = open("PKI/certs/serveur1.pem")
+    certContent = cert_file.read()
+    cert_file.close()
+    cert = crypto.load_certificate(crypto.FILETYPE_PEM, certContent)
+    encodedData = bytes(data, encoding='ascii')
+    decodedSig = base64.b64decode(signature)
+    try:     
+        crypto.verify(cert, decodedSig, encodedData, "sha256")
+    except:
+        return 0
+    return 1
+
 
 ######################################################Diplome###########################################################################
 def createBaseDiploma(prenom,nom,diplome): #prend nom, prenom et intitulé, create diploma without qrcode or stégano
@@ -216,8 +225,8 @@ def CreateDiploma(query): #Object { prenom: "", nom: "", diplome: "" }
 	createBaseDiploma(prenom, nom, diplome)
 	result = createSteganoContent("diplome.png", prenom, nom, diplome)
 	addStegano("diplome.png",result)
-	signature = createSignature(result)
-	creerQRCode(signature)
+	encodedSig = createSignature(result)
+	creerQRCode(encodedSig)
 	return 0
 
 query = '{"query":{"prenom":"eazeae","nom":"azeaze","diplome":"ezaeaz"}}'

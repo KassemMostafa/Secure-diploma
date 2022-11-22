@@ -10,27 +10,29 @@ x509_extensions		= server_req
 string_mask		= nombstr
 
 [ req_distinguished_name ]
-countryName				= Pays
+countryName			= Pays
 countryName_default		= FR
 countryName_min			= 2
 countryName_max			= 2
 
 stateOrProvinceName		= Etat, province ou departement
-stateOrProvinceName_default	= 
+stateOrProvinceName_default	= IDF
 
-localityName				= Ville
-localityName_default		= 
+localityName			= Ville
+localityName_default		= Cergy
 
-organizationName			= Organisation
-organizationName_default	= 
+organizationName		= Organisation
+organizationName_default	= CyTech
 
 organizationalUnitName		= Unite organisationnelle
-organizationalUnitName_default	= 
+organizationalUnitName_default	= Cyber
 
-commonName				= Nom commun (ex: nom de la root CA)
+commonName			= Nom commun (ex: nom de la root CA)
+commonName_default		= serveur1
 commonName_max			= 64
 
 emailAddress			= Adresse mail
+emailAddress_default		= dumoulingr@cy-tech.fr
 emailAddress_max		= 64
 
 

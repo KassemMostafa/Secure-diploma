@@ -1,5 +1,4 @@
-# pour signer un certificat CA intermediaire
-
+# pour signer un certificat serveur
 
 [ ca ]
 default_ca	= CA_default		# The default ca section
@@ -7,7 +6,7 @@ default_ca	= CA_default		# The default ca section
 
 [ CA_default ]
 
-dir		= /data/Documents/ING3/Cryptographie/PKIprojet	# Where everything is kept
+dir		= PKI	# Where everything is kept
 certs		= $dir/certs			# Where the issued certs are kept
 crl_dir		= $dir/crl			# Where the issued crl are kept
 database	= $dir/index.txt		# database index file.
@@ -20,32 +19,40 @@ private_key	= $dir/private/ca.key		# The private key
 
 RANDFILE	= $dir/private/.rand		# private random number file
 
-
-default_days	= 4383			# how long to certify for
+default_days	= 730			# how long to certify for
 default_crl_days= 30			# how long before next CRL
 default_md	= sha256			# which md to use.
 preserve	= no			# keep passed DN ordering
 
-
-x509_extensions	= subca_cert
+x509_extensions	= server_cert
 copy_extensions = none
-policy		= policy_match
+policy		= policy_anything
 
+[ server_cert ]
 
-
-[ subca_cert ]
-basicConstraints	= critical, CA:true
-authorityKeyIdentifier	= keyid:always, issuer:always
+basicConstraints	= critical, CA:false
+authorityKeyIdentifier	= keyid:always
 subjectKeyIdentifier	= hash
-keyUsage 		= critical, keyCertSign, cRLSign
-# nsCertType		= sslCA, emailCA, objCA
-nsComment		= "Genere par OpenSSL"
-# subjectAltName	= email:copy
+keyUsage 		= digitalSignature, nonRepudiation, keyEncipherment
+extendedKeyUsage	= serverAuth, clientAuth
+nsCertType		= server, objsign
+nsComment		= "Certificat serveur genere par OpenSSL pour INT/LOR"
+
+#subjectAltName		= email:copy
+#issuerAltName		= issuer:copy
+
+
+#nsCaRevocationUrl	= http://www.domain.dom/ca-crl.pem
+#nsBaseUrl
+#nsRevocationUrl
+#nsRenewalUrl
+#nsCaPolicyUrl
+#nsSslServerName
 
 
 
-[ policy_match ]
-countryName		= match
+[ policy_anything ]
+countryName		= supplied
 stateOrProvinceName	= optional
 localityName		= optional
 organizationName	= supplied

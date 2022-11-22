@@ -9,25 +9,26 @@ x509_extensions		= subca_req
 string_mask		= nombstr
 
 [ req_distinguished_name ]
-countryName				= Pays
+countryName			= Pays
 countryName_default		= FR
 countryName_min			= 2
 countryName_max			= 2
 
 stateOrProvinceName		= Etat, province ou departement
-stateOrProvinceName_default	= 
+stateOrProvinceName_default	= IDF
 
 localityName			= Ville
-localityName_default	= 
+localityName_default		= Cergy
 
-organizationName			= Organisation
-organizationName_default	= 
+organizationName		= Organisation
+organizationName_default	= CyTech
 
 organizationalUnitName		= Unite organisationnelle
-organizationalUnitName_default	= 
+organizationalUnitName_default	= Cyber
 
-commonName				= Nom commun
-commonName_default		= 
+commonName			= Nom commun
+commonName_default		= CAServeurCyTechCyber
+emailAddress_default		= dumoulingr@cy-tech.fr
 commonName_max			= 64
 
 emailAddress			= Adresse mail
